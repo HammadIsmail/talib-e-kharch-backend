@@ -78,14 +78,3 @@ async def health_check():
 # Mount all API endpoints
 app.include_router(api_router, prefix="/api")
 app.include_router(api_router, prefix="/api/v1")
-
-
-@app.api_route("/{path_name:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
-async def catch_all(request: Request, path_name: str):
-    return {
-        "app": settings.APP_NAME,
-        "status": "online",
-        "received_path": request.url.path,
-        "path_name": path_name,
-        "available_routes": [route.path for route in app.routes if hasattr(route, "path") and not route.path.startswith("/{")]
-    }
