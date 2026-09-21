@@ -1,15 +1,20 @@
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
+
+try:
+    from pydantic import EmailStr
+except ImportError:
+    EmailStr = str
 
 
 class UserRegister(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
-    email: EmailStr
+    email: str = Field(..., min_length=5, max_length=255)
     pin: str = Field(..., min_length=4, max_length=6, pattern=r"^\d{4,6}$")
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str = Field(..., min_length=5, max_length=255)
     pin: str = Field(..., min_length=4, max_length=6, pattern=r"^\d{4,6}$")
 
 
