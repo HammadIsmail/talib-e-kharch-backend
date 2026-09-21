@@ -1,8 +1,11 @@
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 
 from app.core.config import get_settings
 
+logger = logging.getLogger(__name__)
 settings = get_settings()
 
 # Normalize database URL for SQLAlchemy asyncpg
@@ -15,17 +18,15 @@ elif db_url.startswith("postgres://"):
 # Remove url query params that asyncpg does not accept in connection string
 connect_args = {}
 if "sslmode" in db_url or "neon.tech" in db_url or "channel_binding" in db_url:
-    # Strip query params from url
     if "?" in db_url:
         db_url = db_url.split("?")[0]
     connect_args["ssl"] = True
 
+# Use NullPool for serverless environments (Vercel / AWS Lambda) to prevent closed event loop issues
 engine = create_async_engine(
     db_url,
     echo=False,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
+    poolclass=NullPool,
     connect_args=connect_args,
 )
 
